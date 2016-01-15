@@ -8,6 +8,54 @@
 # stored and sent least significant byte first". 
 fmtA = '<HHhhhHHHHHhBBBBBBBBHBBBBBBBBBBxBBBBBBBBB'
 
+# All data is stored in raw binary form. This dictionary will map the field
+# name to a function with which to format the data. For example, the date is
+# converted into the format "d/m/y" instead of an int like 7623. Some fields
+# map to a function "nothing" that simply returns its argument. This is because
+# it either does not need to be formatted (e.g. avg_wind and hi_wind) or else 
+# it is a piece of data my weather system does not record. 
+format_map = {
+    "date"             : decompress_date, 
+    "time"             : decompress_time, 
+    "out_temp"         : float_div_ten, 
+    "hi_out_temp"      : float_div_ten, 
+    "low_out_temp"     : float_div_ten, 
+    "rainfall"         : float_div_hundred, # convert to inches (/period)
+    "hi_rain_rate"     : float_div_hundred, # convert to inches/hour
+    "barometer"        : flaot_div_thousand, 
+    "solar_rad"        : nothing, 
+    "num_wind_samples" : nothing, 
+    "inside_temp"      : float_div_ten, 
+    "in_humidity"      : float_div_hundred, 
+    "out_humidity"     : float_div_hundred, 
+    "avg_wind"         : nothing,
+    "hi_wind"          : nothing, 
+    "hi_wind_dir"      : eval_wind, 
+    "prevailing_dir"   : eval_wind, 
+    "avg_UV"           : nothing, 
+    "ET"               : nothing, 
+    "high_solar_rad"   : nothing, 
+    "high_UV"          : nothing, 
+    "forecast_rule"    : eval_forecast, 
+    "leaf_temp1"       : nothing,
+    "leaf_temp2"       : nothing, 
+    "leaf_wet1"        : nothing, 
+    "leaf_wet2"        : nothing, 
+    "soil_temp1"       : nothing, 
+    "soil_temp2"       : nothing,
+    "soil_temp3"       : nothing, 
+    "soil_temp4"       : nothing, 
+    "extra_hum1"       : nothing, 
+    "exta_hum2"        : nothing, 
+    "extra_temp1"      : nothing, 
+    "extra_temp2"      : nothing, 
+    "extra_temp3"      : nothing, 
+    "soil_moist1"      : nothing, 
+    "soil_moist2"      : nothing, 
+    "soil_moist3"      : nothing, 
+    "soil_moist4"      : nothing
+}
+
 # A list of all the data fields. In the setup, any fields that the client
 # wants to exclude will be turned to empty strings. 
 ordFieldsA = [
