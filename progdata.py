@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+# The following string describes the 52 byte record as a struct of different
+# types. H indicates an unsigned short (2 bytes), h indicates a signed short,
+# B indicates an unsigned char (1 byte), and finally x is a padding byte (to
+# be ignored). The < character notes that the data is little-endian, since
+# according to company specification, "Multi-byte binary values are generally
+# stored and sent least significant byte first". 
+fmtA = '<HHhhhHHHHHhBBBBBBBBHBBBBBBBBBBxBBBBBBBBB'
+
 # A list of all the data fields. In the setup, any fields that the client
 # wants to exclude will be turned to empty strings. 
 ordFieldsA = [
