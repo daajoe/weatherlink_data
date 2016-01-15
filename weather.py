@@ -60,15 +60,6 @@ def timestamp(t):
     return (vantageDateStamp * 2**16) + vantageTimeStamp
 
 
-
-# def is_last_row(itr):
-#     old = itr.next()
-#     for new in itr:
-#         yield False, old
-#         old = new
-#     yield True, old
-
-
 # initCSV: make sure that the CSV file has the appropriate headers -- if they
 #          are missing, then write them, if they do not match up with 
 #          the user's specified fields then output a warning message. Finally,
@@ -103,8 +94,8 @@ def initCSV(reader, writer, fields):
                 continue 
             else: 
                 oldest = t
-        # Return date value that has been most recently updated, or None
         return oldest
+
 
 # retrieveData: returns an httplib.HTTPReponse object containing the requested
 #               data from weatherlink.com after time t. 
@@ -132,8 +123,8 @@ def retrieveData(conn, username, password, t):
 
 
 # appendRecord: append the appropriate data from the 52 byte record onto the 
-#               provided local CSV file. This function handles the bulk of the
-#               low-level byte interpretation. 
+#               provided local CSV file. This function handles unpacking the
+#               data and interpreting the bytes.
 def appendRecord(writer, record, fields, mask):
     # unpack 52 byte record into 39 data values
     vals = struct.unpack(progdata.fmtA, record) 
@@ -149,24 +140,25 @@ def main():
     (options, arguments)         = optionSetup()
     (username, password, fields) = readSettings() 
 
-    # Create mask which will be used in appendRecord()  
+    # Create mask to delete unnecessary data in appendRecord()  
     mask = [0 if field not in fields else 1 for field in progdata.ordFieldsA]
     
     try:
-        f = open(options.filename, 'a+b') # open in append binary mode
+        f = open(options.filename, 'a+b') # open in append mode
     except IOError as err:
         print >> sys.stderr, "Issue opening file: %s", options.filename
         print >> sys.stderr, err
         exit(1)
     with f:
-        # Handle CSV setup, and return t (the most recent record stored on file)
+        # Handle CSV setup, return t (timestamp of most recent record on file)
         t = initCSV(csv.reader(f), csv.writer(f), fields) 
-        # convert datetime.datetime object to weatherlink format
+        # convert datetime.datetime timestamp to WeatherLink format
         t = timestamp(t)
     
         # Retrieve all records more recent than t
         conn = httplib.HTTPConnection("weatherlink.com")
         res  = retrieveData(conn, username, password, t)
+        conn.close()
     
         # Create writer to append CSV
         writer = csv.DictWriter(f, fields) 
@@ -177,8 +169,6 @@ def main():
             "record"
             appendRecord(writer, record, fields, mask) 
             record = res.read(52) 
-
-        conn.close()
 
 
 if __name__ == '__main__':
