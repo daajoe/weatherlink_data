@@ -8,6 +8,36 @@
 # stored and sent least significant byte first". 
 fmtA = '<HHhhhHHHHHhBBBBBBBBHBBBBBBBBBBxBBBBBBBBB'
 
+def float_div_ten(n):
+    return n / 10.0
+
+def float_div_hundred(n):
+    return n / 100.0
+
+def flaot_div_thousand(n):
+    return n / 1000.0
+
+def decompress_date(t):
+    return "%d/%d/%02d" % ((t >> 5) % 16, t % 32, t >> 9)
+
+def decompress_time(t):
+    return "%d:%02d" % (t / 100, t % 100)
+
+def eval_wind(dir):
+    try:
+        return winds[dir]
+    except KeyError:
+        return "WEIRD DATA AUGGHGHG"
+
+def eval_forecast(val):
+    try:
+        return forecast[val]
+    except KeyError:
+        return "WEIRD DATA AUGHGH"
+
+def nothing(val):
+    return val
+
 # All data is stored in raw binary form. This dictionary will map the field
 # name to a function with which to format the data. For example, the date is
 # converted into the format "d/m/y" instead of an int like 7623. Some fields
