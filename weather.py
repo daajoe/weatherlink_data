@@ -110,8 +110,8 @@ def retrieveData(conn, username, password, t):
         print >> sys.stderr, "HTTP status code: %s: %s" % res.status, res.reason
         exit(1)
     # parse out number of records
-    records = res.read().split("\n")[1].split("=")[1]
-    print "Preparing to import %s records..." % records
+    numRecords = res.read().split("\n")[1].split("=")[1]
+    print "Preparing to import %s records..." % numRecords
 
     conn.request("GET", url + "data")    # request with action=data
     res = conn.getresponse()
@@ -119,20 +119,22 @@ def retrieveData(conn, username, password, t):
         print >> sys.stderr, "Could not retrieve data from server."
         print >> sys.stderr, "HTTP status code: %s: %s" % res.status, res.reason
         exit(1)
-    return res 
+    return res, int(numRecords)
 
 
 # appendRecord: append the appropriate data from the 52 byte record onto the 
 #               provided local CSV file. This function handles unpacking the
 #               data and interpreting the bytes.
 def appendRecord(writer, record, fields, mask):
+    if record == progdata.DASHED:
+        print >> sys.stderr, "Skipping dashed record."
+        return
     # unpack 52 byte record into 39 data values
     vals = struct.unpack(progdata.fmtA, record) 
     # delete vals listed in dotfile
     vals = list(itertools.compress(vals, mask)) 
 
     recordDict = {f : progdata.format_map[f](v) for f, v in zip(fields, vals)}
-    
     writer.writerow(recordDict)
 
 
@@ -156,19 +158,18 @@ def main():
         t = timestamp(t)
     
         # Retrieve all records more recent than t
-        conn = httplib.HTTPConnection("weatherlink.com")
-        res  = retrieveData(conn, username, password, t)
-        conn.close()
+        conn             = httplib.HTTPConnection("weatherlink.com")
+        res, numRecords  = retrieveData(conn, username, password, t)
     
         # Create writer to append CSV
         writer = csv.DictWriter(f, fields) 
 
         # Read each retrieved 52 byte record and append it to the CSV file
-        record = res.read(52) 
-        while record != "":
-            "record"
-            appendRecord(writer, record, fields, mask) 
+        for i in range(numRecords):
             record = res.read(52) 
+            appendRecord(writer, record, fields, mask) 
+
+        conn.close()
 
 
 if __name__ == '__main__':
