@@ -12,10 +12,12 @@ import itertools
 import progdata
 
 
-# optionSetup: use optparse module to setup the program's command line options
-#              and defaults. The funtion returns the tuple (options, args) 
-#              where options.filename is the provided filename, etc.
 def optionSetup():
+    """ 
+    Use optparse module to setup the program's command line options
+    and defaults. The funtion returns the tuple (options, args) 
+    where options.filename is the provided filename, etc.
+    """
     p = optparse.OptionParser()
     p.add_option("-f", "--file", dest="filename", 
                  default="%s/weatherlink.csv" % os.getenv("HOME"),
@@ -26,9 +28,12 @@ def optionSetup():
     return p.parse_args()
 
 
-# readSettings: read the client's weatherlink.com account username, password, 
-#               and list of fields to exclude. 
+
 def readSettings():
+    """
+    Read the client's weatherlink.com account username, password,
+    and list of fields to exclude. 
+    """
     filename = "%s/.weatherlink" % os.getenv("HOME")
     try:
         f = open(filename, 'r') # open in append binary mode
@@ -46,13 +51,17 @@ def readSettings():
         return username, password, fields
 
 
-# timestamp: function takes in a datetime.datetime object and returns the 
-#            corresponding "timestamp" value necessary in the API request.
-#            The value is just the first 4 bytes of the archive record -- the
-#            Date Stamp followed by the Time Stamp. The only trick is to 
-#            multiply the Date Stamp by 2^16 (since it is the first 2 of the 4
-#            bytes) before summing the Time Stamp and Date Stamp. 
 def timestamp(t):
+    """
+    Takes a datetime.datetime object and returns corresponding integer
+    necessary in request to retrieve data. This value is effectively
+    just the two byte date stamp followed by the two byte time stamp.
+    >>> import datetime
+    >>> tstamp(datetime.datetime(2012, 6, 17, 15, 5)) # 6/17/12 15:05
+    416351713
+    >>> tstamp(None)
+    0
+    """
     if t == None:
         return 0
     vantageTimeStamp = (100 * t.hour) + t.minute
@@ -60,12 +69,14 @@ def timestamp(t):
     return (vantageDateStamp * 2**16) + vantageTimeStamp
 
 
-# initCSV: make sure that the CSV file has the appropriate headers -- if they
-#          are missing, then write them, if they do not match up with 
-#          the user's specified fields then output a warning message. Finally,
-#          return date and time of the most recent record as a 
-#          datetime.datetime object (or None if there are no records).
 def initCSV(reader, writer, fields):
+    """
+    make sure that the CSV file has the appropriate headers -- if they
+    are missing, then write them, if they do not match up with 
+    the user's specified fields then output a warning message. Finally,
+    return date and time of the most recent record as a 
+    datetime.datetime object (or None if there are no records).
+    """
     try:
         headers = reader.next()
     except StopIteration: # handle empty file
@@ -97,9 +108,11 @@ def initCSV(reader, writer, fields):
         return oldest
 
 
-# retrieveData: returns an httplib.HTTPReponse object containing the requested
-#               data from weatherlink.com after time t. 
 def retrieveData(conn, username, password, t):
+    """
+    returns an httplib.HTTPReponse object containing the requested
+    data from weatherlink.com after time t. 
+    """
     url = "/webdl.php?timestamp=" + str(t) + "&user=" + username + "&pass=" + \
           password + "&action="
     conn.request("GET", url + "headers") # request with action=headers
@@ -122,10 +135,12 @@ def retrieveData(conn, username, password, t):
     return res, int(numRecords)
 
 
-# appendRecord: append the appropriate data from the 52 byte record onto the 
-#               provided local CSV file. This function handles unpacking the
-#               data and interpreting the bytes.
 def appendRecord(writer, record, fields, mask):
+    """
+    append the appropriate data from the 52 byte record onto the 
+    provided local CSV file. This function handles unpacking the
+    data and interpreting the bytes.
+    """
     if record == progdata.DASHED:
         print >> sys.stderr, "Skipping dashed record."
         return
