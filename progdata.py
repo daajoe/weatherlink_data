@@ -11,14 +11,8 @@ fmtA = '<HHhhhHHHHHhBBBBBBBBHBBBBBBBBBBxBBBBBBBBB'
 # Completely DASHed record
 DASHED = "\xff" * 52
 
-def float_div_ten(n):
-    return n / 10.0
-
-def float_div_hundred(n):
-    return n / 100.0
-
-def flaot_div_thousand(n):
-    return n / 1000.0
+def div_by(n):
+    return lambda x: x / float(n)
 
 def decompress_date(t):
     return "%d/%d/%02d" % ((t >> 5) % 16, t % 32, t >> 9)
@@ -50,17 +44,17 @@ def nothing(val):
 format_map = {
     "date"             : decompress_date, 
     "time"             : decompress_time, 
-    "out_temp"         : float_div_ten, 
-    "hi_out_temp"      : float_div_ten, 
-    "low_out_temp"     : float_div_ten, 
-    "rainfall"         : float_div_hundred, # convert to inches (/period)
-    "hi_rain_rate"     : float_div_hundred, # convert to inches/hour
-    "barometer"        : flaot_div_thousand, 
+    "out_temp"         : div_by(10), 
+    "hi_out_temp"      : div_by(10), 
+    "low_out_temp"     : div_by(10), 
+    "rainfall"         : div_by(100), # convert to inches (/period)
+    "hi_rain_rate"     : div_by(100), # convert to inches/hour
+    "barometer"        : div_by(1000), 
     "solar_rad"        : nothing, 
     "num_wind_samples" : nothing, 
-    "inside_temp"      : float_div_ten, 
-    "in_humidity"      : float_div_hundred, 
-    "out_humidity"     : float_div_hundred, 
+    "inside_temp"      : div_by(10), 
+    "in_humidity"      : div_by(100), 
+    "out_humidity"     : div_by(100), 
     "avg_wind"         : nothing,
     "hi_wind"          : nothing, 
     "hi_wind_dir"      : eval_wind, 
