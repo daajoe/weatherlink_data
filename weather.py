@@ -28,7 +28,6 @@ def optionSetup():
     return p.parse_args()
 
 
-
 def readSettings():
     """
     Read the client's weatherlink.com account username, password,
@@ -65,8 +64,8 @@ def timestamp(t):
     if t == None:
         return 0
     vantageTimeStamp = (100 * t.hour) + t.minute
-    vantageDateStamp = t.day + (t.month * 32) + ((t.year - 2000) * 512)
-    return (vantageDateStamp * 2**16) + vantageTimeStamp
+    vantageDateStamp = t.day + (t.month << 5) + ((t.year - 2000) << 9)
+    return (vantageDateStamp << 16) + vantageTimeStamp
 
 
 def initCSV(reader, writer, fields):
