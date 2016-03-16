@@ -28,12 +28,11 @@ def optionSetup():
     return p.parse_args()
 
 
-def readSettings():
+def readSettings(filename):
     """
     Read the client's weatherlink.com account username, password,
     and list of fields to exclude. 
     """
-    filename = "%s/.weatherlink" % os.getenv("HOME")
     try:
         f = open(filename, 'r') # open in append binary mode
     except IOError as err:
@@ -44,7 +43,6 @@ def readSettings():
         username = f.readline().strip()
         password = f.readline().strip()
         exclusions = f.read()
-        # create list of user-excluded fields
         exclusions = "".join(exclusions.split()).split(',') 
         fields = [f for f in progdata.ordFieldsA if f not in exclusions]
         return username, password, fields
@@ -154,7 +152,7 @@ def appendRecord(writer, record, fields, mask):
 
 def main():
     (options, arguments)         = optionSetup()
-    (username, password, fields) = readSettings() 
+    (username, password, fields) = readSettings("%s/.weatherlink" % os.getenv("HOME")) 
 
     # Create mask to delete unnecessary data in appendRecord()  
     mask = [0 if field not in fields else 1 for field in progdata.ordFieldsA]
