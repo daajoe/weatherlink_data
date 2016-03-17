@@ -6,20 +6,21 @@ CSV file.
 
 1. WeatherLink only stores a fixed amount of archive data for each station, so
 you are guaranteed to lose data eventually if you do not back it up. For 
-example, my account holds up to 10240 records; a new record is added each 30
+example, my account holds up to 10240 records; a new record is added every 30
 minutes, so it can only keep the most recent 213 days worth of data.
-2. On the web service, data is stored in unformatted in 52 byte records with a
-lot of unnecessary data (e.g. soil temperature and leaf wetness is useless
-if you don't have the right equpment on your weather station. The program
+2. On the web service, data is stored in 52 byte records with a
+lot of unnecessary data (e.g. soil temperature and leaf wetness are useless
+if you do not have the right equipment on your weather station). This program
 formats and stores just the data you want in a CSV. 
 
 ## Setup
 Two files are needed for the program to function:
 
-1. A `.weatherlink` file in your home direction with your weatherlink.com
-account name on the first line, password on the second line, followed by any
-fields that you to exclude from the CSV on as many additional lines as needed,
-separated by commas. A list of all of the fields is in the progdata.py file.
+1. A `.weatherlink` file in your home directory with your weatherlink.com
+account name on the first line, password on the second line, and a 
+comma-separated list of fields that you want to exclude from the CSV 
+(on as many additional lines as needed). A list of all of the field names 
+is in the progdata.py file.
 Your dotfile might look like this:
 ```
 ACCOUNT
@@ -27,11 +28,11 @@ PASSWORD
 soil_moist1, soil_moist2, soil_moist3, soil_moist4
 ```
 2. A CSV file. By default, the program expects `weatherlink.csv` in your home
-folder -- just make sure to create an empty file. You can use the `f FILENAME`
+directory -- simply create an empty file. You can use `f FILENAME`
 or `--file=FILENAME` as an argment to specify a different file.
 
 
-Important: designed for data format Rev "B" (which is used in firmware 
+Note: designed for data format Rev "B" (which is used in Davis firmware 
 dated after 4/24/02). Support for older firmware may be added in the future.
 
 ## Data Format
