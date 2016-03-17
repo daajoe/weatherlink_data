@@ -3,7 +3,7 @@
 # The following string describes the 52 byte record as a struct of different
 # types. H indicates an unsigned short (2 bytes), h indicates a signed short,
 # B indicates an unsigned char (1 byte), and finally x is a padding byte (to
-# be ignored). The < character notes that the data is little-endian, since
+# be ignored). The < character notes that the data is little-endian, since,
 # according to company specification, "Multi-byte binary values are generally
 # stored and sent least significant byte first". 
 fmtA = '<HHhhhHHHHHhBBBBBBBBHBBBBBBBBBBxBBBBBBBBB'
@@ -21,16 +21,10 @@ def decompress_time(t):
     return "%d:%02d" % (t / 100, t % 100)
 
 def eval_wind(dir):
-    try:
-        return winds[dir]
-    except KeyError:
-        return "WEIRD DATA AUGGHGHG"
+    return winds[dir]
 
 def eval_forecast(val):
-    try:
-        return forecast[val]
-    except KeyError:
-        return "WEIRD DATA AUGHGH"
+    return forecast[val]
 
 def nothing(val):
     return val
@@ -38,9 +32,9 @@ def nothing(val):
 # All data is stored in raw binary form. This dictionary will map the field
 # name to a function with which to format the data. For example, the date is
 # converted into the format "d/m/y" instead of an int like 7623. Some fields
-# map to a function "nothing" that simply returns its argument. This is because
-# it either does not need to be formatted (e.g. avg_wind and hi_wind) or else 
-# it is a piece of data my weather system does not record. 
+# map to a function "nothing" that simply returns its argument -- this is 
+# because it either does not need to be formatted (e.g. avg_wind and hi_wind)
+# or else I have not yet created a formatting rule for it.  
 format_map = {
     "date"             : decompress_date, 
     "time"             : decompress_time, 
@@ -83,8 +77,7 @@ format_map = {
     "soil_moist4"      : nothing
 }
 
-# A list of all the data fields. In the setup, any fields that the client
-# wants to exclude will be turned to empty strings. 
+# Ordered list of all the data fields. 
 ordFieldsA = [
     "date", "time", "out_temp", "hi_out_temp", "low_out_temp", 
     "rainfall", "hi_rain_rate", "barometer", "solar_rad", 
