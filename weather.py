@@ -183,7 +183,7 @@ def retrieve_data(filename,username,password,fields):
 def main():
     (options, arguments)         = optionSetup()
     (username, password, fields) = readSettings("%s/.weatherlink" % os.getenv("HOME")) 
-    retreive_data(options.filename,username,password,fields)
+    retrieve_data(options.filename,username,password,fields)
 
 
 if __name__ == '__main__':
