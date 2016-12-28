@@ -150,17 +150,14 @@ def appendRecord(writer, record, fields, mask):
     writer.writerow(recordDict)
 
 
-def main():
-    (options, arguments)         = optionSetup()
-    (username, password, fields) = readSettings("%s/.weatherlink" % os.getenv("HOME")) 
-
+def retrieve_data(filename,username,password,fields):
     # Create mask to delete unnecessary data in appendRecord()  
     mask = [0 if field not in fields else 1 for field in progdata.ordFieldsA]
     
     try:
-        f = open(options.filename, 'a+b') # open in append mode
+        f = open(filename, 'a+b') # open in append mode
     except IOError as err:
-        print >> sys.stderr, "Issue opening file: %s", options.filename
+        print >> sys.stderr, "Issue opening file: %s", filename
         print >> sys.stderr, err
         exit(1)
     with f:
@@ -182,6 +179,11 @@ def main():
             appendRecord(writer, record, fields, mask) 
 
         conn.close()
+
+def main():
+    (options, arguments)         = optionSetup()
+    (username, password, fields) = readSettings("%s/.weatherlink" % os.getenv("HOME")) 
+    retreive_data(options.filename,username,password,fields)
 
 
 if __name__ == '__main__':
