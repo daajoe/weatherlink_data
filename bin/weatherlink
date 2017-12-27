@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#
+# Copyright 2017
+# Johannes K. Fichte
+#
+# weatherlink.py is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+# weatherlink.py is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.  You should have received a
+# copy of the GNU General Public License along with
+# weatherlink.py.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import absolute_import
+
+__author__ = 'Johannes K. Fichte'
+__license__ = 'GPL'
+__version__ = '1.0.0'
+
+# , print_function
+
+import argparse
+import datetime
+import inspect
+import json
+import logging
+import logging.config
+import os
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+
+# ==================================================================================================================
+src_path = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
+src_path = os.path.realpath(os.path.join(src_path, '..'))
+# if src_path not in sys.path:
+#TODO: bug with newer python version
+sys.path.insert(0, src_path)
+
+import weatherlink
+from weatherlink.utils.helpers import read_config, setup_logging, write_config
+
+weatherlink_yaml = read_config(filename=__file__, config_dir=os.path.dirname(__file__))
+setup_logging(filename=__file__, config_dir=os.path.dirname(__file__))
+
+
+# ==================================================================================================================
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='%s -f instance')
+    parser.add_argument('-f', '--file', dest='instance', action='store', type=lambda x: os.path.realpath(x),
+                        help='instance', required=True)
+    print 'exiting...'
+    exit(1)
+    # rename parameter to wrappers
+    parser.add_argument('-a', '--solver-args', dest='solver_args', action='store', type=str,
+                        help='solver_args', default='')
+    parser.add_argument('-w', '--solver-wall-clock-limit', dest='timelimit', action='store', type=int,
+                        help='time-limit',
+                        default=900)
+    parser.add_argument('--runid', dest='runid', action='store', type=int, help='id of the current repeation',
+                        default=1)
+    parser.add_argument('-b', '--bfs-budget', dest='budget', action='store', type=int, help='bfs budget',
+                        default=10)
+    parser.add_argument('-r', '--no_improvements', dest='ls_no_improvements', action='store', type=int,
+                        help=' the number of no-improvement rounds',
+                        default=10)
+    parser.add_argument('-t', '--tmp', dest='tmp', action='store', type=str, help='unused',
+                        default=tempfile.gettempdir())
+    parser.add_argument('-p', '--pre-solver', dest='presolver', action='store', type=str, help='select presolver',
+                        default='htd', choices=['htd', 'flow_cutter'])
+    parser.add_argument('-x', '--presolver-wall-clock-limit', dest='presolver_timeout', action='store', type=int,
+                        help='presolver runtime limit', default=15)
+    args = parser.parse_args()
+    if args.presolver == 'htd':
+        args.usehtd = True
+    else:
+        args.usehtd = False
+    if not os.path.isfile(args.instance):
+        logging.warn('File "%s" does not exist.\n' % args.instance)
+        exit(16)
+    return args
+
+
+def main():
+    # weatherlink_yaml['weatherlink.com']['measurements']
+    last_updated = None
+    if weatherlink_yaml['weatherlink.com']['last_updated']:
+        last_updated = datetime.datetime.strptime(weatherlink_yaml['weatherlink.com']['last_updated'],
+                                                  "%a, %d %b %Y %H:%M:%S %Z")
+
+    dl = weatherlink.handler.Handler(username=weatherlink_yaml['weatherlink.com']['username'],
+                                     password=weatherlink_yaml['weatherlink.com']['password'],
+                                     fields=weatherlink_yaml['weatherlink.com']['fields'],
+                                     region='EU', last_updated=last_updated,
+                                     mis_infos=weatherlink_yaml['mis']['station'])
+    last_modified = dl.run()
+    weatherlink_yaml['weatherlink.com']['last_updated'] = last_modified
+
+    write_config(data=weatherlink_yaml, filename=__file__, config_dir=os.path.dirname(__file__))
+
+    exit(1)
+    args = parse_args()
+    fname = args.instance
+    solver = args.solver
+    temp_path = args.tmp
+
+    sys.stdout.write('\n')
+    sys.stdout.flush()
+    exit(0)
+
+
+if __name__ == "__main__":
+    main()
